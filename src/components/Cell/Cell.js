@@ -4,13 +4,13 @@ function Cell() {
   const [cover, setCover] = useState('Hidden');
   // return <div>{cover} Cell</div>;
   return (
-    <button
+    <div
       onClick={() => {
         setCover('Uncovered');
       }}
     >
       {cover} Cell
-    </button>
+    </div>
   );
 }
 export default Cell;
