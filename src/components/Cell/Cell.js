@@ -12,7 +12,7 @@ function Cell(props) {
       className={styles.cell}
       onClick={() => props.handleClick(coordinates)}
     >
-      {isShown? isMine? 'Mine' : neighbors : 'Hidden'}
+      {isShown? (isMine? 'Mine' : neighbors) : 'Hidden'}
     </button>
   );
 }

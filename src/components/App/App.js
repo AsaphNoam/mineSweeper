@@ -20,7 +20,7 @@ class App extends React.Component {
   async componentDidMount() {} /* --> */
 
   render() {
-    console.log('rendering')
+    console.log('rendering app')
     return (
       <div className={s.root}>
         <Board/>

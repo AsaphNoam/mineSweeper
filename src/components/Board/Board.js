@@ -7,23 +7,16 @@ import styles from './Board.scss';
 //       decide which cells hold mines, and pass down isMine to cells as props
 //       Pass down how many mines each sell is adjacent to
 
-function initializeBoard(N) {
-  const grid = [];
-  for (let i = 0; i < N; i++) {
-    const row = [];
-    for (let j = 0; j < N; j++) {
-      row.push({isMine: false, neighboringMines: 0, isShown: false});
-    }
-    grid.push(row);
-  }
-  return grid;
+function initBoard(N) {
+  return Array.from(Array(N),
+    () => Array.from(Array(N),
+      () => ({isMine: false, neighboringMines: 0, isShown: false})));
 }
 
-// Places bombs and returns array with mine locations
 function placeMines(board, numberOfMines) {
   let minesLocations = []
   while (minesLocations.length < numberOfMines) {
-    let coordinate = generateRandomTuple(board.length);
+    let coordinate = generateRandomCoordinates(board.length);
     let coordinateString = JSON.stringify(coordinate);
     if (!minesLocations.includes(coordinateString)) {
       minesLocations.push(coordinateString);
@@ -33,13 +26,12 @@ function placeMines(board, numberOfMines) {
   }
 }
 
-function generateRandomTuple(N) {
+function generateRandomCoordinates(N) {
   let x = Math.floor(Math.random() * N);
   let y = Math.floor(Math.random() * N);
-  return {x: x, y: y};
+  return {x, y};
 }
 
-//Increment the number of adjacent mines in every cell adjacent to a mine.
 function updateNeighbors(board, coordinate) {
   let x = coordinate.x;
   let y = coordinate.y;
@@ -55,18 +47,20 @@ function updateNeighbors(board, coordinate) {
 
 function Board() {
 
-  const tempBoard = initializeBoard(5);
-  placeMines(tempBoard, 4);
+  const tempBoard = initBoard(5);
+  placeMines(tempBoard, 1);
   const [board, setBoard] = useState(tempBoard);
 
-  function clearNeighbors(coordinate) {
-    const tempBoard = board
-    let x = coordinate.x;
-    let y = coordinate.y;
+  function clearNeighbors(coordinates, tempBoard) {
+    let x = coordinates.x;
+    let y = coordinates.y;
     for (let i = -1; i < 2; i++) {
       for (let j = 0 - 1; j < 2; j++) {
         try {
-          tempBoard[x + i][y + j].neighboringMines = 100;
+          //TODO Make this act recursively so that clicking on a 0 opens all other zeroes
+          if (tempBoard[x + i][y + j].neighboringMines === 0) {
+            tempBoard[x + i][y + j].isShown = true;
+          }
         } catch (e) {
         }
       }
@@ -77,20 +71,25 @@ function Board() {
   }
 
   function handleCellClick(coordinates) {
-    const tempBoard = board;
+    const tempBoard = Array.from(board);
     tempBoard[coordinates.x][coordinates.y].isShown = true;
+    if (tempBoard[coordinates.x][coordinates.y].neighboringMines === 0) {
+      clearNeighbors(coordinates, tempBoard)
+    }
     setBoard(tempBoard);
-    console.log(tempBoard);
+    console.log(board);
   }
 
+  console.log('rendering Board');
   return (
     <div className={styles.boardRoot}>
       {board.map((row, iIndex) => {
         return row.map((cell, jIndex) => {
           let coordinates = {x: iIndex, y: jIndex}
           return <Cell
-            key={jIndex + '' + iIndex} isMine={cell.isMine} neighbors={cell.neighboringMines}
-            clearNeighbors={() => clearNeighbors(coordinates)} handleClick={handleCellClick}
+            key={`${jIndex}${iIndex}`} isMine={cell.isMine} neighbors={cell.neighboringMines}
+            clearNeighbors={() => clearNeighbors(coordinates)}
+            handleClick={(coordinates) => handleCellClick(coordinates)}
             coordinates={coordinates} isShown={cell.isShown}/>;
         });
       })}
