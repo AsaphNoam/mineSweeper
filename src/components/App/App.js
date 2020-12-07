@@ -20,9 +20,10 @@ class App extends React.Component {
   async componentDidMount() {} /* --> */
 
   render() {
+    console.log('rendering')
     return (
       <div className={s.root}>
-        <Board>This is the board</Board>
+        <Board/>
       </div>
     );
   }
