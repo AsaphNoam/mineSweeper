@@ -21,27 +21,28 @@ function initializeBoard(N) {
 
 // Places bombs and returns array with mine locations
 function placeMines(board, numberOfMines) {
-  //TODO: Sets only handle primitives in JS
-  let minesLocations = new Set();
-  while (minesLocations.size < numberOfMines){
+  let minesLocations = []
+  while (minesLocations.length < numberOfMines){
     let coordinate = generateRandomTuple(board.length);
-    minesLocations.add(coordinate);
-    board[coordinate[0]][coordinate[1]] = [1,0];
-    updateNeighbors(coordinate, board);
+    let coordinateString = JSON.stringify(coordinate);
+    if(!minesLocations.includes(coordinateString)){
+      minesLocations.push(coordinateString);
+      board[coordinate.x][coordinate.y] = [1,0];
+      updateNeighbors(board, coordinate);
+    }
   }
 }
 
 function generateRandomTuple(N){
-  let num1 =  Math.floor(Math.random() * N);
-  let num2 = Math.floor(Math.random() * N);
-  return [num1, num2];
+  let x =  Math.floor(Math.random() * N);
+  let y = Math.floor(Math.random() * N);
+  return {x:x, y:y};
 }
 
 //Increment the number of adjacent mines in every cell adjacent to a mine.
 function updateNeighbors(board, coordinate){
-  let x = coordinate[0];
-  let y = coordinate[1];
-  // console.log(board[x][y]);
+  let x = coordinate.x;
+  let y = coordinate.y;
   for(let i = - 1; i < 2; i++){
     for(let j = 0 - 1; j < 2; j++){
       try{
@@ -63,7 +64,7 @@ function Board() {
     <div className={styles.boardRoot}>
       {board.map((row) => {
         return row.map((mine) => {
-          return <Cell key={uuidv4()} isMine={mine[0] === 1}/>;
+          return <Cell key={uuidv4()} isMine={mine[0] === 1} neighbors={mine[1]}/>;
         });
       })}
     </div>
