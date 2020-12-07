@@ -1,6 +1,11 @@
-.board-root{
+.board-root {
+  position: relative;
   display: flex;
+  justify-content: center;
+  flex-flow: row wrap;
   border: solid black;
   color: blue;
-  font-size: 30px;
+  font-size: 20px;
+  height: 50%;
+  width: 50%;
 }

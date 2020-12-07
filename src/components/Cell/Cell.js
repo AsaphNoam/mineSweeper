@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
+import styles from './Cell.scss';
 
-function Cell() {
+function Cell(props) {
   const [cover, setCover] = useState('Hidden');
-  // return <div>{cover} Cell</div>;
+  // TODO: Add functionality to flag as mine
+  //       Add loss on mine uncovering
   return (
-    <div
+    <button
+      className={styles.cell}
       onClick={() => {
-        setCover('Uncovered');
+        setCover(props.isMine ? 'Mine' : 'No Mine');
       }}
     >
-      {cover} Cell
-    </div>
+      {cover}
+    </button>
   );
 }
 export default Cell;
