@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import Cell from '../Cell/Cell';
 import styles from './Board.scss';
 
@@ -35,8 +35,7 @@ function generateRandomCoordinates(N) {
 }
 
 function updateNeighbors(board, coordinate) {
-  const x = coordinate.x;
-  const y = coordinate.y;
+  const { x, y } = coordinate;
   for (let i = -1; i < 2; i++) {
     for (let j = 0 - 1; j < 2; j++) {
       try {
@@ -63,10 +62,11 @@ function Board() {
           try {
             if (
               tempBoard[x + i][y + j].neighboringMines < 2 &&
-              !tempBoard[x + i][y + j].isShown
+              !tempBoard[x + i][y + j].isShown &&
+              !tempBoard[x + i][y + j].isMine
             ) {
               tempBoard[x + i][y + j].isShown = true;
-              cellStack.push({x: x + i, y: y + j});
+              cellStack.push({ x: x + i, y: y + j });
             }
           } catch (e) {}
         }
@@ -77,9 +77,20 @@ function Board() {
 
   function handleCellClick(coordinates) {
     const tempBoard = Array.from(board);
-    tempBoard[coordinates.x][coordinates.y].isShown = true;
-    if (tempBoard[coordinates.x][coordinates.y].neighboringMines === 0) {
+    const { x, y } = coordinates;
+    tempBoard[x][y].isShown = true;
+    if (tempBoard[x][y].neighboringMines === 0) {
       clearNeighbors(coordinates, tempBoard);
+    }
+    if (tempBoard[x][y].isMine) {
+      alert('KABOOM');
+      const playAgain = confirm('Would you like to play again?');
+      if (playAgain){
+        const tempBoard = initBoard(5);
+        placeMines(tempBoard, 3);
+        setBoard(tempBoard);
+        return;
+      }
     }
     setBoard(tempBoard);
   }
