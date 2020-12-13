@@ -8,7 +8,7 @@ function Cell(props) {
   // TODO: Add functionality to flag as mine
   //       Add loss on mine uncovering
   return (
-    <button
+    <button style={isShown && isMine?{backgroundColor: 'red'}: isShown? {backgroundColor: "lightblue"} :{}}
       className={styles.cell}
       onClick={() => props.handleClick(coordinates)}
     >

@@ -1,25 +1,27 @@
 import React, {useState} from 'react';
 import Cell from '../Cell/Cell';
-import {v4 as uuidv4} from 'uuid';
 import styles from './Board.scss';
 
 // TODO: Accept N as an input
 //       decide which cells hold mines, and pass down isMine to cells as props
 //       Pass down how many mines each sell is adjacent to
 
-function initBoard(N) {
-  return Array.from(Array(N),
-    () => Array.from(Array(N),
-      () => ({isMine: false, neighboringMines: 0, isShown: false})));
-}
+const initBoard = (N) =>
+  Array.from(Array(N), () =>
+    Array.from(Array(N), () => ({
+      isMine: false,
+      neighboringMines: 0,
+      isShown: false,
+    })),
+  );
 
 function placeMines(board, numberOfMines) {
-  let minesLocations = []
-  while (minesLocations.length < numberOfMines) {
-    let coordinate = generateRandomCoordinates(board.length);
-    let coordinateString = JSON.stringify(coordinate);
-    if (!minesLocations.includes(coordinateString)) {
-      minesLocations.push(coordinateString);
+  const minesCoordinates = [];
+  while (minesCoordinates.length < numberOfMines) {
+    const coordinate = generateRandomCoordinates(board.length);
+    const coordinateString = JSON.stringify(coordinate);
+    if (!minesCoordinates.includes(coordinateString)) {
+      minesCoordinates.push(coordinateString);
       board[coordinate.x][coordinate.y].isMine = true;
       updateNeighbors(board, coordinate);
     }
@@ -27,70 +29,77 @@ function placeMines(board, numberOfMines) {
 }
 
 function generateRandomCoordinates(N) {
-  let x = Math.floor(Math.random() * N);
-  let y = Math.floor(Math.random() * N);
-  return {x, y};
+  const x = Math.floor(Math.random() * N);
+  const y = Math.floor(Math.random() * N);
+  return { x, y };
 }
 
 function updateNeighbors(board, coordinate) {
-  let x = coordinate.x;
-  let y = coordinate.y;
+  const x = coordinate.x;
+  const y = coordinate.y;
   for (let i = -1; i < 2; i++) {
     for (let j = 0 - 1; j < 2; j++) {
       try {
         board[x + i][y + j].neighboringMines += 1;
-      } catch (e) {
-      }
+      } catch (e) {}
     }
   }
 }
 
 function Board() {
-
   const tempBoard = initBoard(5);
-  placeMines(tempBoard, 1);
+  placeMines(tempBoard, 3);
   const [board, setBoard] = useState(tempBoard);
 
   function clearNeighbors(coordinates, tempBoard) {
-    let x = coordinates.x;
-    let y = coordinates.y;
-    for (let i = -1; i < 2; i++) {
-      for (let j = 0 - 1; j < 2; j++) {
-        try {
-          //TODO Make this act recursively so that clicking on a 0 opens all other zeroes
-          if (tempBoard[x + i][y + j].neighboringMines === 0) {
-            tempBoard[x + i][y + j].isShown = true;
-          }
-        } catch (e) {
+    const cellStack = [];
+    cellStack.push(coordinates);
+    while (cellStack.length > 0) {
+      const curCoordinates = cellStack.pop();
+      const x = curCoordinates.x;
+      const y = curCoordinates.y;
+      for (let i = -1; i < 2; i++) {
+        for (let j = -1; j < 2; j++) {
+          try {
+            if (
+              tempBoard[x + i][y + j].neighboringMines < 2 &&
+              !tempBoard[x + i][y + j].isShown
+            ) {
+              tempBoard[x + i][y + j].isShown = true;
+              cellStack.push({x: x + i, y: y + j});
+            }
+          } catch (e) {}
         }
       }
     }
     setBoard(tempBoard);
-    console.log(board)
-    console.log('cleared neighbors');
   }
 
   function handleCellClick(coordinates) {
     const tempBoard = Array.from(board);
     tempBoard[coordinates.x][coordinates.y].isShown = true;
     if (tempBoard[coordinates.x][coordinates.y].neighboringMines === 0) {
-      clearNeighbors(coordinates, tempBoard)
+      clearNeighbors(coordinates, tempBoard);
     }
     setBoard(tempBoard);
-    console.log(board);
   }
 
-  console.log('rendering Board');
   return (
     <div className={styles.boardRoot}>
       {board.map((row, iIndex) => {
         return row.map((cell, jIndex) => {
-          let coordinates = {x: iIndex, y: jIndex}
-          return <Cell
-            key={`${jIndex}${iIndex}`} isMine={cell.isMine} neighbors={cell.neighboringMines}
-            clearNeighbors={() => clearNeighbors(coordinates)}
-            handleClick={(coordinates) => handleCellClick(coordinates)}
-            coordinates={coordinates} isShown={cell.isShown}/>;
+          const coordinates = { x: iIndex, y: jIndex };
+          return (
+            <Cell
+              key={`${jIndex}${iIndex}`}
+              isMine={cell.isMine}
+              neighbors={cell.neighboringMines}
+              clearNeighbors={() => clearNeighbors}
+              handleClick={handleCellClick}
+              coordinates={coordinates}
+              isShown={cell.isShown}
+            />
+          );
         });
       })}
     </div>
