@@ -6,7 +6,7 @@ import styles from './Board.scss';
 //       decide which cells hold mines, and pass down isMine to cells as props
 //       Pass down how many mines each sell is adjacent to
 
-const initBoard = (N) =>
+const createBoard = (N) =>
   Array.from(Array(N), () =>
     Array.from(Array(N), () => ({
       isMine: false,
@@ -36,43 +36,46 @@ function generateRandomCoordinates(N) {
 
 function updateNeighbors(board, coordinate) {
   const { x, y } = coordinate;
-  for (let i = -1; i < 2; i++) {
-    for (let j = 0 - 1; j < 2; j++) {
+  [-1, 0, 1].forEach((i) => {
+    [0, 1, -1].forEach(j =>{
       try {
         board[x + i][y + j].neighboringMines += 1;
       } catch (e) {}
-    }
-  }
+    });
+  });
 }
 
+
+
 function Board() {
-  const tempBoard = initBoard(5);
+  const tempBoard = createBoard(5);
   placeMines(tempBoard, 3);
   const [board, setBoard] = useState(tempBoard);
 
-  function clearNeighbors(coordinates, tempBoard) {
+  function clearNeighbors(coordinates, board) {
     const cellStack = [];
     cellStack.push(coordinates);
     while (cellStack.length > 0) {
       const curCoordinates = cellStack.pop();
       const x = curCoordinates.x;
       const y = curCoordinates.y;
-      for (let i = -1; i < 2; i++) {
-        for (let j = -1; j < 2; j++) {
+      [-1, 0, 1].forEach((i) => {
+        [-1, 0, 1].forEach((j) => {
           try {
             if (
-              tempBoard[x + i][y + j].neighboringMines < 2 &&
-              !tempBoard[x + i][y + j].isShown &&
-              !tempBoard[x + i][y + j].isMine
+              board[x + i][y + j].neighboringMines < 2 &&
+              !board[x + i][y + j].isShown &&
+              !board[x + i][y + j].isMine
             ) {
-              tempBoard[x + i][y + j].isShown = true;
-              cellStack.push({ x: x + i, y: y + j });
+              board[x + i][y + j].isShown = true;
+              if (board[x + i][y + j].neighboringMines < 1)
+                cellStack.push({ x: x + i, y: y + j });
             }
           } catch (e) {}
-        }
-      }
+        });
+      });
     }
-    setBoard(tempBoard);
+    setBoard(board);
   }
 
   function handleCellClick(coordinates) {
@@ -83,16 +86,19 @@ function Board() {
       clearNeighbors(coordinates, tempBoard);
     }
     if (tempBoard[x][y].isMine) {
-      alert('KABOOM');
-      const playAgain = confirm('Would you like to play again?');
-      if (playAgain){
-        const tempBoard = initBoard(5);
-        placeMines(tempBoard, 3);
-        setBoard(tempBoard);
-        return;
-      }
+      return handleMine();
     }
     setBoard(tempBoard);
+  }
+
+  function handleMine() {
+    alert('KABOOM');
+    const playAgain = confirm('Would you like to play again?');
+    if (playAgain) {
+      const newBoard = createBoard(5);
+      placeMines(newBoard, 3);
+      setBoard(newBoard);
+    }
   }
 
   return (
