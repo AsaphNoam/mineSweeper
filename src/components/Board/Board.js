@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Cell from '../Cell/Cell';
 import styles from './Board.scss';
 import { Page, Container, Row, Col, Card, EmptyState } from 'wix-style-react';
 
-// TODO:
-//       Fix win alert to function properly - currently the uncoveredCells doesn't increment anywhere outside of handleCLick
+// TODO: Fix win message
 
 function Board(props) {
   const { size, numberOfMines } = props;
   const [board, setBoard] = useState(createBoard(size, numberOfMines));
   const [uncoveredCells, setUncoveredCells] = useState(0);
-  // TODO: Split into separate functional sub-components
+
+  console.log(uncoveredCells);
   return (
-    <div className={styles.boardRoot}>
+    <Card className={styles.boardRoot}>
       {board.map((row, iIndex) =>
         row.map((cell, jIndex) => {
           const coordinates = { x: iIndex, y: jIndex };
@@ -30,11 +30,10 @@ function Board(props) {
           );
         }),
       )}
-    </div>
+    </Card>
   );
 
   function toggleFlag(coordinate) {
-    setUncoveredCells(uncoveredCells + 1);
     const tempBoard = Array.from(board);
     const { x, y } = coordinate;
     tempBoard[x][y].isFlagged = !tempBoard[x][y].isFlagged;
@@ -46,6 +45,7 @@ function Board(props) {
     const cellStack = [];
     cellStack.push(coordinates);
     while (cellStack.length > 0) {
+      console.log(uncoveredCells);
       const curCoordinate = cellStack.pop();
       const { x, y } = curCoordinate;
       [-1, 0, 1].forEach((i) => {
@@ -53,15 +53,14 @@ function Board(props) {
           try {
             if (
               !tempBoard[x + i][y + j].isShown &&
-              !tempBoard[x + i][y + j].isMine
+              !tempBoard[x + i][y + j].isMine &&
+              !tempBoard[x + i][y + j].isFlagged
             ) {
               tempBoard[x + i][y + j].isShown = true;
               setUncoveredCells(uncoveredCells + 1);
               if (findNeighboringMines({ x: x + i, y: y + j }) === 0) {
                 cellStack.push({ x: x + i, y: y + j });
-                console.log(`Incremented ${uncoveredCells}`);
                 setUncoveredCells(uncoveredCells + 1);
-                console.log(`Incremented ${uncoveredCells}`);
               }
             }
           } catch (e) {}
@@ -74,7 +73,7 @@ function Board(props) {
   function handleCellClick(coordinate) {
     const tempBoard = Array.from(board);
     const { x, y } = coordinate;
-    if (tempBoard[x][y].isFlagged) {
+    if (tempBoard[x][y].isFlagged || tempBoard[x][y].isShown) {
       return;
     }
     if (tempBoard[x][y].isMine) {
@@ -83,23 +82,22 @@ function Board(props) {
       const playAgain = true;
       if (playAgain) {
         setBoard(createBoard(size, numberOfMines));
-        return;
+      }
+    } else {
+      tempBoard[x][y].isShown = true;
+      setBoard(tempBoard);
+      setUncoveredCells(uncoveredCells + 1);
+      if (findNeighboringMines(coordinate) === 0) {
+        uncoverNeighbors(coordinate);
+      }
+      if (uncoveredCells === size ** 2 - numberOfMines) {
+        const playAgain = confirm('You win! play again?');
+        if (playAgain) {
+          setBoard(createBoard(size, numberOfMines));
+          setUncoveredCells(0);
+        }
       }
     }
-    tempBoard[x][y].isShown = true;
-    setBoard(tempBoard);
-    if (findNeighboringMines(coordinate) === 0) {
-      uncoverNeighbors(coordinate);
-    } else setUncoveredCells(uncoveredCells + 1);
-    if (uncoveredCells === size ** 2 - numberOfMines) {
-      const playAgain = confirm('You win! play again?');
-      if (playAgain) {
-        setBoard(createBoard(size, numberOfMines));
-        console.log(uncoveredCells);
-        setUncoveredCells(0);
-      }
-    }
-    console.log(uncoveredCells);
   }
 
   function findNeighboringMines(coordinate) {
@@ -136,7 +134,6 @@ function placeMines(board, numberOfMines) {
     if (!minesCoordinates.includes(coordinateString)) {
       minesCoordinates.push(coordinateString);
       board[coordinate.x][coordinate.y].isMine = true;
-      // updateNeighbors(board, coordinate);
     }
   }
 }

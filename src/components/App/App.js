@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { withTranslation } from '@wix/wix-i18n-config';
 import s from './App.scss';
 import { Board } from '../Board/Board';
+import { Page, PageHeader } from 'wix-style-react';
 
 /* <-- To remove demo stuff just copy-paste:
   \{?/\*\s?<--([\n\n]|.)*?-->\s?\*\/\}?
@@ -23,7 +24,7 @@ class App extends React.Component {
     console.log('rendering app');
     return (
       <div className={s.root}>
-        <Board size={6} numberOfMines={3} />
+        <Board size={3} numberOfMines={1} />
       </div>
     );
   }
