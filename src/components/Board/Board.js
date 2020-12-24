@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import Cell from '../Cell/Cell';
 import styles from './Board.scss';
+import { Page, Container, Row, Col, Card, EmptyState } from 'wix-style-react';
+
 // TODO:
-//       Fix win alert to function properly
+//       Fix win alert to function properly - currently the uncoveredCells doesn't increment anywhere outside of handleCLick
 
 function Board(props) {
   const { size, numberOfMines } = props;
   const [board, setBoard] = useState(createBoard(size, numberOfMines));
   const [uncoveredCells, setUncoveredCells] = useState(0);
-
+  // TODO: Split into separate functional sub-components
   return (
     <div className={styles.boardRoot}>
-      {board.map((row, iIndex) => {
-        return row.map((cell, jIndex) => {
+      {board.map((row, iIndex) =>
+        row.map((cell, jIndex) => {
           const coordinates = { x: iIndex, y: jIndex };
           return (
             <Cell
@@ -23,21 +25,23 @@ function Board(props) {
               isShown={cell.isShown}
               isFlagged={cell.isFlagged}
               toggleFlag={() => toggleFlag(coordinates)}
+              cellSize={100 / size + '%'}
             />
           );
-        });
-      })}
+        }),
+      )}
     </div>
   );
 
   function toggleFlag(coordinate) {
+    setUncoveredCells(uncoveredCells + 1);
     const tempBoard = Array.from(board);
     const { x, y } = coordinate;
     tempBoard[x][y].isFlagged = !tempBoard[x][y].isFlagged;
     setBoard(tempBoard);
   }
 
-  function clearNeighbors(coordinates) {
+  function uncoverNeighbors(coordinates) {
     const tempBoard = Array.from(board);
     const cellStack = [];
     cellStack.push(coordinates);
@@ -55,6 +59,9 @@ function Board(props) {
               setUncoveredCells(uncoveredCells + 1);
               if (findNeighboringMines({ x: x + i, y: y + j }) === 0) {
                 cellStack.push({ x: x + i, y: y + j });
+                console.log(`Incremented ${uncoveredCells}`);
+                setUncoveredCells(uncoveredCells + 1);
+                console.log(`Incremented ${uncoveredCells}`);
               }
             }
           } catch (e) {}
@@ -72,7 +79,8 @@ function Board(props) {
     }
     if (tempBoard[x][y].isMine) {
       alert('KABOOM');
-      const playAgain = confirm('Would you like to play again?');
+      // const playAgain = confirm('Would you like to play again?');
+      const playAgain = true;
       if (playAgain) {
         setBoard(createBoard(size, numberOfMines));
         return;
@@ -81,12 +89,13 @@ function Board(props) {
     tempBoard[x][y].isShown = true;
     setBoard(tempBoard);
     if (findNeighboringMines(coordinate) === 0) {
-      clearNeighbors(coordinate);
+      uncoverNeighbors(coordinate);
     } else setUncoveredCells(uncoveredCells + 1);
     if (uncoveredCells === size ** 2 - numberOfMines) {
       const playAgain = confirm('You win! play again?');
       if (playAgain) {
         setBoard(createBoard(size, numberOfMines));
+        console.log(uncoveredCells);
         setUncoveredCells(0);
       }
     }

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withTranslation } from '@wix/wix-i18n-config';
 import s from './App.scss';
-import Board from '../Board/Board';
+import { Board } from '../Board/Board';
 
 /* <-- To remove demo stuff just copy-paste:
   \{?/\*\s?<--([\n\n]|.)*?-->\s?\*\/\}?
@@ -20,10 +20,10 @@ class App extends React.Component {
   async componentDidMount() {} /* --> */
 
   render() {
-    console.log('rendering app')
+    console.log('rendering app');
     return (
       <div className={s.root}>
-        <Board/>
+        <Board size={6} numberOfMines={3} />
       </div>
     );
   }
