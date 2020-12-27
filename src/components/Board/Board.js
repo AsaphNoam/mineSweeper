@@ -13,7 +13,7 @@ function Board(props) {
 
   useEffect(() => {
     if (uncoveredCells === size ** 2 - numberOfMines) {
-      alert('You win!');
+      alert('You win!!!');
     }
   }, [uncoveredCells]);
 
@@ -63,13 +63,11 @@ function Board(props) {
               !tempBoard[x + i][y + j].isFlagged
             ) {
               tempBoard[x + i][y + j].isShown = true;
-              console.log(`Uncovered for [${x}][${y}]`);
-              setUncoveredCells(uncoveredCells + 1);
-              console.log(uncoveredCells);
+              setUncoveredCells((cells) => {
+                return cells + 1;
+              });
               if (findNeighboringMines({ x: x + i, y: y + j }) === 0) {
-                console.log('pushed stack');
                 cellStack.push({ x: x + i, y: y + j });
-                setUncoveredCells(uncoveredCells + 1);
               }
             }
           } catch (e) {}
@@ -80,22 +78,22 @@ function Board(props) {
   }
 
   function handleCellClick(coordinate) {
-    let tempBoard = Array.from(board);
+    const tempBoard = Array.from(board);
     const { x, y } = coordinate;
     if (tempBoard[x][y].isFlagged || tempBoard[x][y].isShown) {
       return;
     }
     if (tempBoard[x][y].isMine) {
       alert('KABOOM');
-      // const playAgain = confirm('Would you like to play again?');
-      const playAgain = true;
+      const playAgain = confirm('Would you like to play again?');
       if (playAgain) {
+        setUncoveredCells(0);
         setBoard(createBoard(size, numberOfMines));
       }
     } else {
       tempBoard[x][y].isShown = true;
       setBoard(tempBoard);
-      setUncoveredCells(uncoveredCells + 1);
+      setUncoveredCells((cells) => cells + 1);
       if (findNeighboringMines(coordinate) === 0) {
         uncoverNeighbors(coordinate);
       }
