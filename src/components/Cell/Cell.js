@@ -1,15 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import styles from './Cell.scss';
-import {
-  Page,
-  Container,
-  Row,
-  Col,
-  Card,
-  EmptyState,
-  Button,
-  Box,
-} from 'wix-style-react';
 
 function Cell(props) {
   const { isShown, isMine, neighbors, isFlagged, toggleFlag, cellSize } = props;

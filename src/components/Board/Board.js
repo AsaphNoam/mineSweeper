@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Cell from '../Cell/Cell';
 import styles from './Board.scss';
-import { Page, Container, Row, Col, Card, EmptyState } from 'wix-style-react';
+import { Card } from 'wix-style-react';
+import { v4 as uuidv4 } from 'uuid';
 
 // TODO: Fix win message
 
@@ -10,7 +11,13 @@ function Board(props) {
   const [board, setBoard] = useState(createBoard(size, numberOfMines));
   const [uncoveredCells, setUncoveredCells] = useState(0);
 
-  console.log(uncoveredCells);
+  useEffect(() => {
+    if (uncoveredCells === size ** 2 - numberOfMines) {
+      alert('You win!');
+    }
+  }, [uncoveredCells]);
+
+  console.log(`Rendering: ${uncoveredCells}`);
   return (
     <Card className={styles.boardRoot}>
       {board.map((row, iIndex) =>
@@ -18,7 +25,7 @@ function Board(props) {
           const coordinates = { x: iIndex, y: jIndex };
           return (
             <Cell
-              key={`${jIndex}${iIndex}`}
+              key={uuidv4()}
               isMine={cell.isMine}
               neighbors={findNeighboringMines(coordinates)}
               handleClick={() => handleCellClick(coordinates)}
@@ -45,7 +52,6 @@ function Board(props) {
     const cellStack = [];
     cellStack.push(coordinates);
     while (cellStack.length > 0) {
-      console.log(uncoveredCells);
       const curCoordinate = cellStack.pop();
       const { x, y } = curCoordinate;
       [-1, 0, 1].forEach((i) => {
@@ -57,8 +63,11 @@ function Board(props) {
               !tempBoard[x + i][y + j].isFlagged
             ) {
               tempBoard[x + i][y + j].isShown = true;
+              console.log(`Uncovered for [${x}][${y}]`);
               setUncoveredCells(uncoveredCells + 1);
+              console.log(uncoveredCells);
               if (findNeighboringMines({ x: x + i, y: y + j }) === 0) {
+                console.log('pushed stack');
                 cellStack.push({ x: x + i, y: y + j });
                 setUncoveredCells(uncoveredCells + 1);
               }
@@ -71,7 +80,7 @@ function Board(props) {
   }
 
   function handleCellClick(coordinate) {
-    const tempBoard = Array.from(board);
+    let tempBoard = Array.from(board);
     const { x, y } = coordinate;
     if (tempBoard[x][y].isFlagged || tempBoard[x][y].isShown) {
       return;
@@ -89,13 +98,6 @@ function Board(props) {
       setUncoveredCells(uncoveredCells + 1);
       if (findNeighboringMines(coordinate) === 0) {
         uncoverNeighbors(coordinate);
-      }
-      if (uncoveredCells === size ** 2 - numberOfMines) {
-        const playAgain = confirm('You win! play again?');
-        if (playAgain) {
-          setBoard(createBoard(size, numberOfMines));
-          setUncoveredCells(0);
-        }
       }
     }
   }
